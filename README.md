@@ -84,3 +84,19 @@ Enjoy it! 😄
 ---
 
 Please ⭐️ this repo and [Agently](https://github.com/Maplemx/Agently) main repo if you like it! Thank you very much!
+
+> 💡 Ideas / Bug Report: [Report Issues Here](https://github.com/AgentEra/Agently-Daily-News-Collector/issues)
+>
+> 📧 Email Us: [developer@agently.cn](mailto:developer@agently.cn)
+>
+> 👾 Discord Group:
+>
+> [Click Here to Join](https://discord.gg/4HnarMBpYT) or Scan the QR Code Down Below
+>
+> <img width="120" alt="image" src="https://github.com/Maplemx/Agently/assets/4413155/089c239c-6133-4844-840c-b48c42ccbad1">
+>
+> 💬 WeChat Group（加入微信群）:
+>
+>  [Click Here to Apply](https://doc.weixin.qq.com/forms/AIoA8gcHAFMAScAhgZQABIlW6tV3l7QQf) or Scan the QR Code Down Below
+>
+> <img width="120" alt="image" src="https://github.com/Maplemx/Agently/assets/4413155/7f4bc9bf-a125-4a1e-a0a4-0170b718c1a6">
