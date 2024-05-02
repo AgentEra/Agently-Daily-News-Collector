@@ -3,12 +3,12 @@ IS_DEBUG: false
 # Proxy Settings
 #PROXY: http://127.0.0.1:7890
 # Model Settings
-MODEL_PROVIDER: OpenAI
+MODEL_PROVIDER: OAIClient
 #MODEL_URL: 
 MODEL_AUTH:
   api_key: "<Input Your API Key Here>"
-#MODEL_OPTIONS:
-#  model: gpt-3.5-turbo
+MODEL_OPTIONS:
+  model: gpt-3.5-turbo
 # Application Settings
 MAX_COLUMN_NUM: 3
 OUTPUT_LANGUAGE: English
