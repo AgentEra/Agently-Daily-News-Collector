@@ -40,13 +40,21 @@ If you want to use other model, you can read [this document](https://github.com/
 
 ### Step 3: Start
 
-Run this command in shell:
+Because this project is a Python project, you need to install Python first. You can find installation instruction on [Python offical website](https://www.python.org/).
+
+At the first time to run this project, you should use this command in shell to download and install dependency packages:
+
+```shell
+pip install -r path/to/project/requirements.txt
+```
+
+Wait until the dependency packages are installed then use this command in shell to start the generation process.
 
 ```shell
 python path/to/project/app.py
 ```
 
-Then you will see a tip `[Please input the topic of your daily news collection]:`.
+You will see a tip `[Please input the topic of your daily news collection]:`.
 
 Input your topic idea about the field of news that you want to collect, then you're good to go.
 

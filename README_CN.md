@@ -55,9 +55,19 @@ MAX_SEARCH_RESULTS: 8 # 在这里设置每个栏目搜索的最大结果数量
 SLEEP_TIME: 5 # 在这里设置每次模型请求后的等待时间，以防止频繁请求导致模型拒绝访问
 ```
 
+如果您想要了解切换其他模型的更多细节，可以阅读Agently官方网站关于[模型设置的说明页面](http://agently.tech/features/model_request.html)。
+
 ### 第三步：启动任务
 
-在您的项目目录下使用以下Shell脚本指令运行Python脚本：
+因为本项目为Python项目，您需要在本地安装Python环境。您可以在[Python官方网站](https://www.python.org/)找到适合您的安装方法。
+
+然后，在您的项目目录下使用以下Shell脚本指令更新项目依赖包：
+
+```shell
+pip install -r requirements.txt
+```
+
+依赖包安装完毕后，通过以下Shell脚本指令即可启动：
 
 ```shell
 python app.py
