@@ -1,4 +1,10 @@
-# Agently-Daily-News-Collector
+<div style="text-align:center">
+
+<h1>Agently-Daily-News-Collector</h1>
+
+<b>English | <a href = "./README_CN.md">中文说明</a></b>
+
+</div>
 
 **Agently Daily News Collector** is an open-source LLM based automatically news collecting workflow showcase project powered by [**_<font color = "red">Agent</font><font color = "blue">ly</font>_** AI application development framework](https://github.com/Maplemx/Agently).
 
@@ -6,9 +12,9 @@ You can use this project to generate almost any topic of news collection. All yo
 
 News collection file examples:
 
-`MarkDown File`[Lastest Updated on AI Models 2024-05-02](https://github.com/AgentEra/Agently-Daily-News-Collector/blob/main/examples/Latest%20Updates%20on%20AI%20Models2024-05-02.md)
+`MarkDown File` [Lastest Updated on AI Models 2024-05-02](https://github.com/AgentEra/Agently-Daily-News-Collector/blob/main/examples/Latest%20Updates%20on%20AI%20Models2024-05-02.md)
 
-`PDF File`[Lastest Updated on AI Models 2024-05-02](https://github.com/AgentEra/Agently-Daily-News-Collector/blob/main/examples/Latest%20Updates%20on%20AI%20Models%202024-05-02.pdf)
+`PDF File` [Lastest Updated on AI Models 2024-05-02](https://github.com/AgentEra/Agently-Daily-News-Collector/blob/main/examples/Latest%20Updates%20on%20AI%20Models%202024-05-02.pdf)
 
 > **ℹ️ Notice:**
 > 
@@ -74,12 +80,12 @@ Enjoy it! 😄
 
 ---
 
-### Mainly Dependencies
+## Mainly Dependencies
 
-- Agently AI Development Framework: https://github.com/Maplemx/Agently | https://pypi.org/project/Agently/
-- duckduckgo-search: https://pypi.org/project/duckduckgo-search/
-- BeautifulSoup4: https://pypi.org/project/beautifulsoup4/
-- PyYAML: https://pypi.org/project/pyyaml/
+- **Agently AI Development Framework**: https://github.com/Maplemx/Agently | https://pypi.org/project/Agently/
+- **duckduckgo-search**: https://pypi.org/project/duckduckgo-search/
+- **BeautifulSoup4**: https://pypi.org/project/beautifulsoup4/
+- **PyYAM**L: https://pypi.org/project/pyyaml/
 
 ---
 
@@ -99,4 +105,4 @@ Please ⭐️ this repo and [Agently](https://github.com/Maplemx/Agently) main r
 >
 >  [Click Here to Apply](https://doc.weixin.qq.com/forms/AIoA8gcHAFMAScAhgZQABIlW6tV3l7QQf) or Scan the QR Code Down Below
 >
-> <img width="120" alt="image" src="https://github.com/Maplemx/Agently/assets/4413155/7f4bc9bf-a125-4a1e-a0a4-0170b718c1a6">
+> <img width="120" alt="image" src="https://github.com/Maplemx/Agently/assets/4413155/fb95e15e-c6bd-4dd4-8fc9-99285df9d443">
