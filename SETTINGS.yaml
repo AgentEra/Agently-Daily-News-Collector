@@ -14,3 +14,17 @@ MAX_COLUMN_NUM: 3
 OUTPUT_LANGUAGE: English
 MAX_SEARCH_RESULTS: 8
 SLEEP_TIME: 5
+# Outline Settings
+USE_CUSTOMIZE_OUTLINE: false
+CUSTOMIZE_OUTLINE:
+  report_title: "Today's News about Large Model Applications"
+  column_list:
+    - column_title: New Apps
+      column_requirement: Looking for those applications powered by large models which announced recently
+      search_keywords: large model application announce this week
+    - column_title: Hot Apps
+      column_requirement: Looking for those applications powered by large models which are most popular or are discussed most
+      search_keywords: large model application popular hot 
+    - column_title: Fun Apps
+      column_requirement: Looking for those applications powered by large models which are funny or inspirational
+      search_keywords: large model application cool fun inspire

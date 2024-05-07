@@ -20,30 +20,35 @@ def start(*, agent_factory, SETTINGS, root_path, logger):
 
     @main_workflow.chunk("input_topic")
     def input_topic_executor(inputs, storage):
-        storage.set(
-            "topic",
-            input("[Please input the topic of your daily news collection]: ")
-        )
+        if not SETTINGS.USE_CUSTOMIZE_OUTLINE:
+            storage.set(
+                "topic",
+                input("[Please input the topic of your daily news collection]: ")
+            )
 
     @main_workflow.chunk("generate_outline")
     def generate_outline_executor(inputs, storage):
-        # Load prompt from /prompts/create_outline.yaml
-        outline = (
-            chief_editor_agent
-                .load_yaml_prompt(
-                    path=f"{ root_path }/prompts/create_outline.yaml",
-                    variables={
-                        "topic": storage.get("topic"),
-                        "language": SETTINGS.OUTPUT_LANGUAGE,
-                        "max_column_num": SETTINGS.MAX_COLUMN_NUM,
-                    }
-                )
-                .start()
-        )
-        storage.set("outline", outline)
-        logger.info("[Outline Generated]", outline)
-        # sleep to avoid requesting too often
-        time.sleep(SETTINGS.SLEEP_TIME)
+        if SETTINGS.USE_CUSTOMIZE_OUTLINE:
+            storage.set("outline", SETTINGS.CUSTOMIZE_OUTLINE)
+            logger.info("[Use Customize Outline]", SETTINGS.CUSTOMIZE_OUTLINE)
+        else:
+            # Load prompt from /prompts/create_outline.yaml
+            outline = (
+                chief_editor_agent
+                    .load_yaml_prompt(
+                        path=f"{ root_path }/prompts/create_outline.yaml",
+                        variables={
+                            "topic": storage.get("topic"),
+                            "language": SETTINGS.OUTPUT_LANGUAGE,
+                            "max_column_num": SETTINGS.MAX_COLUMN_NUM,
+                        }
+                    )
+                    .start()
+            )
+            storage.set("outline", outline)
+            logger.info("[Outline Generated]", outline)
+            # sleep to avoid requesting too often
+            time.sleep(SETTINGS.SLEEP_TIME)
 
     @main_workflow.chunk("generate_columns")
     def generate_columns_executor(inputs, storage):
@@ -66,27 +71,30 @@ def start(*, agent_factory, SETTINGS, root_path, logger):
     def generate_markdown_executor(inputs, storage):
         outline = storage.get("outline")
         columns_data = storage.get("columns_data")
-        # Main Title
-        md_doc_text = f'# { outline["report_title"] }\n\n'
-        md_doc_text += f'> { datetime.now().strftime("%Y-%m-%d %A") }\n\n'
-        # Columns
-        if SETTINGS.IS_DEBUG:
-            logger.debug("[Columns Data]", columns_data)
-        for column_data in columns_data:
-            md_doc_text += f'## { column_data["title"] }\n\n### PROLOGUE\n\n'
-            md_doc_text += f'> { column_data["prologue"] }\n\n'
-            md_doc_text += f"### NEWS LIST\n\n"
-            for single_news in column_data["news_list"]:
-                md_doc_text += f'- [{ single_news["title"] }]({ single_news["url"] })\n\n'
-                md_doc_text += f'    - `[summray]` { single_news["summary"] }\n'
-                md_doc_text += f'    - `[comment]` { single_news["recommend_comment"] }\n\n'
-        # Tailer
-        md_doc_text +="\n\n---\n\nPowered by [Agently AI Application Development Framework & Agently Workflow](https://github.com/Maplemx/Agently)\n\n"
-        md_doc_text += f"Model Information：{ SETTINGS.MODEL_PROVIDER if hasattr(SETTINGS, 'MODEL_PROVIDER') else 'OpenAI' } - { str(SETTINGS.MODEL_OPTIONS) if hasattr(SETTINGS, 'MODEL_OPTIONS') else 'Default Options' }\n\n"
-        md_doc_text += '**_<font color = "red">Agent</font><font color = "blue">ly</font>_** [Guidebook](https://github.com/Maplemx/Agently/blob/main/docs/guidebook)\n\n[Apply Developers WeChat Group](https://doc.weixin.qq.com/forms/AIoA8gcHAFMAScAhgZQABIlW6tV3l7QQf) or Scan QR Code to Apply.\n\n<img width="120" alt="image" src="https://github.com/Maplemx/Agently/assets/4413155/7f4bc9bf-a125-4a1e-a0a4-0170b718c1a6">'
-        logger.info("[Markdown Generated]", md_doc_text)
-        with open(f'{ root_path }/{ outline["report_title"] }_{ datetime.now().strftime("%Y-%m-%d") }.md', 'w', encoding='utf-8') as f:
-            f.write(md_doc_text)
+        if columns_data and len(columns_data) > 0:
+            # Main Title
+            md_doc_text = f'# { outline["report_title"] }\n\n'
+            md_doc_text += f'> { datetime.now().strftime("%Y-%m-%d %A") }\n\n'
+            # Columns
+            if SETTINGS.IS_DEBUG:
+                logger.debug("[Columns Data]", columns_data)
+            for column_data in columns_data:
+                md_doc_text += f'## { column_data["title"] }\n\n### PROLOGUE\n\n'
+                md_doc_text += f'> { column_data["prologue"] }\n\n'
+                md_doc_text += f"### NEWS LIST\n\n"
+                for single_news in column_data["news_list"]:
+                    md_doc_text += f'- [{ single_news["title"] }]({ single_news["url"] })\n\n'
+                    md_doc_text += f'    - `[summray]` { single_news["summary"] }\n'
+                    md_doc_text += f'    - `[comment]` { single_news["recommend_comment"] }\n\n'
+            # Tailer
+            md_doc_text +="\n\n---\n\nPowered by [Agently AI Application Development Framework & Agently Workflow](https://github.com/Maplemx/Agently)\n\n"
+            md_doc_text += f"Model Information：{ SETTINGS.MODEL_PROVIDER if hasattr(SETTINGS, 'MODEL_PROVIDER') else 'OpenAI' } - { str(SETTINGS.MODEL_OPTIONS) if hasattr(SETTINGS, 'MODEL_OPTIONS') else 'Default Options' }\n\n"
+            md_doc_text += '**_<font color = "red">Agent</font><font color = "blue">ly</font>_** [Guidebook](https://github.com/Maplemx/Agently/blob/main/docs/guidebook)\n\n[Apply Developers WeChat Group](https://doc.weixin.qq.com/forms/AIoA8gcHAFMAScAhgZQABIlW6tV3l7QQf) or Scan QR Code to Apply.\n\n<img width="120" alt="image" src="https://github.com/Maplemx/Agently/assets/4413155/7f4bc9bf-a125-4a1e-a0a4-0170b718c1a6">'
+            logger.info("[Markdown Generated]", md_doc_text)
+            with open(f'{ root_path }/{ outline["report_title"] }_{ datetime.now().strftime("%Y-%m-%d") }.md', 'w', encoding='utf-8') as f:
+                f.write(md_doc_text)
+        else:
+            logger.info("[Markdown Generation Failed] Due to have not any column data.")
 
     # Connect Chunks
     (
