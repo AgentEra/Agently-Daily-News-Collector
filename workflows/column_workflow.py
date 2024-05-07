@@ -33,27 +33,31 @@ def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
     def pick_news_executor(inputs, storage):
         searched_news = storage.get("searched_news", [])
         logger.info("[Search News Count]", len(searched_news))
-        pick_results = (
-            column_editor_agent
-                .load_yaml_prompt(
-                    path=f"{ root_path }/prompts/pick_news.yaml",
-                    variables={
-                        "column_news": searched_news,
-                        "column_requirement": column_outline["column_requirement"],
-                    }
-                )
-                .start()
-        )
-        # sleep to avoid requesting too often
-        time.sleep(SETTINGS.SLEEP_TIME)
-        picked_news = []
-        for pick_result in pick_results:
-            if pick_result["can_use"]:
-                news = searched_news[int(pick_result["id"])].copy()
-                news.update({ "recommend_comment": pick_result["recommend_comment"] })
-                picked_news.append(news)
-        storage.set("picked_news", picked_news)
-        logger.info("[Picked News Count]", len(picked_news))
+        if len(searched_news) > 0:
+            pick_results = (
+                column_editor_agent
+                    .load_yaml_prompt(
+                        path=f"{ root_path }/prompts/pick_news.yaml",
+                        variables={
+                            "column_news": searched_news,
+                            "column_requirement": column_outline["column_requirement"],
+                        }
+                    )
+                    .start()
+            )
+            # sleep to avoid requesting too often
+            time.sleep(SETTINGS.SLEEP_TIME)
+            picked_news = []
+            for pick_result in pick_results:
+                if pick_result["can_use"]:
+                    news = searched_news[int(pick_result["id"])].copy()
+                    news.update({ "recommend_comment": pick_result["recommend_comment"] })
+                    picked_news.append(news)
+            storage.set("picked_news", picked_news)
+            logger.info("[Picked News Count]", len(picked_news))
+        else:
+            storage.set("picked_news", [])
+            logger.info("[Picked News Count]", 0)
 
     @column_workflow.chunk("read_and_summarize")
     def read_and_summarize_executor(inputs, storage):
