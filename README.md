@@ -40,7 +40,7 @@ If you want to use other model, you can read [this document](https://github.com/
 
 ### Step 3: Start
 
-Because this project is a Python project, you need to install Python first. You can find installation instruction on [Python offical website](https://www.python.org/).
+Because this project is a Python project, you need to install Python first. You can find installation instruction on [Python official website](https://www.python.org/).
 
 At the first time to run this project, you should use this command in shell to download and install dependency packages:
 
