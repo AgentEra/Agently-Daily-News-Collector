@@ -44,9 +44,9 @@ MODEL_PROVIDER: OAIClient #默认使用OpenAI格式的兼容客户端，此客�
 MODEL_URL: http://base_url_path # 如果您需要修改Base URL，使用此项进行设置
 MODEL_AUTH:
   api_key: "" # 在这里输入鉴权用的API-Key信息
-MODEL_OPTIONS: # 在这里指定模型需要的其他参数，如指定具体的模型，或是调整temperture
+MODEL_OPTIONS: # 在这里指定模型需要的其他参数，如指定具体的模型，或是调整temperature
   model: gpt-3.5-turbo
-  temperture: 0.8
+  temperature: 0.8
 # Application Settings
 MAX_COLUMN_NUM: 3 # 在这里设置汇总报告结构中的专栏数量 
 OUTPUT_LANGUAGE: Chinese # 在这里设置汇总报告的输出语种，默认为英语，您可能需要手动改成中文
