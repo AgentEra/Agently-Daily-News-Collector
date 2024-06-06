@@ -11,7 +11,7 @@ instruct:
 output:
   can_summarize:
     $type: bool
-    $desc: judge if {input} has enough relative cotnent to be summarized
+    $desc: judge if {input} has enough relative content to be summarized
   summary:
     $type: str
     $desc: summarize {input} according {info} and {instruct} if {can_summarize} == true, or output null
