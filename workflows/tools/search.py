@@ -22,5 +22,5 @@ def search(keywords, **kwargs):
         return results
     except Exception as e:
         if "logger" in kwargs:
-            logger.error(f"[Search]: Can not search '{ keywords }'.\tError: { str(e) }")
+            kwargs["logger"].error(f"[Search]: Can not search '{ keywords }'.\tError: { str(e) }")
         return [] 
