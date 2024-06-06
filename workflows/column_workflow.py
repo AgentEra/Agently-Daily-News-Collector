@@ -25,7 +25,8 @@ def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
             "searched_news",
             search(
                 column_outline["search_keywords"],
-                proxy=SETTINGS.PROXY if hasattr(SETTINGS, "PROXY") else None
+                proxy=SETTINGS.PROXY if hasattr(SETTINGS, "PROXY") else None,
+                logger=logger,
             )
         )
 
