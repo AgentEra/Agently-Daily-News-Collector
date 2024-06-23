@@ -1,4 +1,4 @@
-Agently==3.2.2.11
+Agently>=3.3.1.2
 PyYAML==6.0.1
 duckduckgo_search>=5.3.0
 beautifulsoup4>=4.12.3
