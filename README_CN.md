@@ -106,6 +106,42 @@ python app.py
 
 ---
 
+## 常见问题（FAQ）
+
+**1. 为什么提示请求超时？（如：operation timed out，504错误等）**
+
+通常情况下是因为无法请求外网造成的，需要通过配置Proxy代理解决，配置方法请参考上文中SETTINGS.yaml的PROXY配置项
+
+**2. 我用的国内模型，为什么还需要配置Proxy？**
+
+本项目默认使用的搜索工具是外网的搜索工具，所以即使模型本身不存在请求访问限制的问题，也需要使用Proxy代理。
+
+**3. 我机子上开着VPN或者其他代理软件呢，为什么还需要配置Proxy？**
+
+因为大部分情况下，在代理软件没有开启特定的全局系统请求代理模式（如Clash的TUN模式）前，Python脚本在运行时，不会使用代理软件在本地启动的代理服务接口来发起网络请求，而是会直接对目标网址进行请求。因此，需要通过配置Proxy来帮助Python脚本调用代理软件在本地启动的代理服务接口。
+
+以Clash客户端为例，你可以从这个位置找到代理服务的端口：
+
+<img width="320" alt="image" src="https://github.com/AgentEra/Agently-Daily-News-Collector/assets/4413155/b94774be-1a9f-4be1-9071-96131eecf4fd">
+
+根据上图，本地的Proxy服务地址应该为http://127.0.0.1:7890
+
+**4. 我自己有更好用的搜索/浏览工具，我能不能干脆直接修改掉默认的搜索或者浏览工具？**
+
+当然可以，我们在项目中对不同的模块都做了解耦，要修改搜索工具，只需要修改/workflows/tools/search.py文件即可，而要修改浏览工具，只需要修改/workflows/tools/browse.py文件即可。
+
+我们也非常欢迎您将自己修改优化的好用的工具PR给项目，分享给更多的人使用，这类贡献者我们还会在项目首页进行署名感谢！
+
+**5. 都说到这里了，我还能修改/定制/优化哪些地方？**
+
+您可以修改的内容包括：
+
+1. /workflows 文件夹中的处理工作流程，比如，添加一个愚人节处理工作流，来生成洋葱新闻
+2. /workflows/tools 文件夹中的搜索和浏览工具，或是结合新增处理工作流，添加更多你觉得有用的工具
+3. /prompts 文件夹中的所有Prompt YAML文件，这些文件都非常易读易修改，欢迎您修改出更好的Prompt，或是简单地将英文Prompt调整为中文
+
+---
+
 ## 主要依赖说明
 
 - Agently AI应用开发框架：https://github.com/Maplemx/Agently | https://pypi.org/project/Agently/ | http://Agently.cn
