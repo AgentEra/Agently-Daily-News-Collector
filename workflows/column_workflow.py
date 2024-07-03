@@ -4,6 +4,16 @@ from .tools.search import search
 from .tools.browse import browse
 
 def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
+    tool_proxy = (
+        SETTINGS.TOOL_PROXY
+        if hasattr(SETTINGS, "TOOL_PROXY")
+        else
+        (
+            SETTINGS.PROXY
+            if hasattr(SETTINGS, "PROXY")
+            else None
+        ) 
+    )
     logger.info("[Start Generate Column]", column_outline["column_title"])
     column_workflow = Agently.Workflow()
     column_editor_agent = agent_factory.create_agent()
@@ -25,7 +35,7 @@ def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
             "searched_news",
             search(
                 column_outline["search_keywords"],
-                proxy=SETTINGS.PROXY if hasattr(SETTINGS, "PROXY") else None,
+                proxy=tool_proxy,
                 logger=logger,
             )
         )
@@ -67,7 +77,11 @@ def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
         if picked_news and len(picked_news) > 0:
             for news in picked_news:
                 logger.info("[Summarzing]", news["title"])
-                news_content = browse(news["url"])
+                news_content = browse(
+                    news["url"],
+                    proxy=tool_proxy,
+                    logger=logger,
+                )
                 if news_content and news_content != "":
                     try:
                         summary_result = (

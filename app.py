@@ -8,6 +8,18 @@ from utils.path import root_path
 SETTINGS = yaml.read("./SETTINGS.yaml")
 logger = Logger(console_level = "DEBUG" if SETTINGS.IS_DEBUG else "INFO")
 
+# Proxy
+model_proxy = (
+    SETTINGS.MODEL_PROXY
+    if hasattr(SETTINGS, "MODEL_PROXY")
+    else
+    (
+        SETTINGS.PROXY
+        if hasattr(SETTINGS, "PROXY")
+        else None
+    ) 
+)
+
 # Agent Factory
 agent_factory = (
     Agently.AgentFactory(is_debug=SETTINGS.IS_DEBUG)
@@ -15,6 +27,7 @@ agent_factory = (
         .set_settings(f"model.{ SETTINGS.MODEL_PROVIDER }.auth", SETTINGS.MODEL_AUTH)
         .set_settings(f"model.{ SETTINGS.MODEL_PROVIDER }.url", SETTINGS.MODEL_URL if hasattr(SETTINGS, "MODEL_URL") else None)
         .set_settings(f"model.{ SETTINGS.MODEL_PROVIDER }.options", SETTINGS.MODEL_OPTIONS if hasattr(SETTINGS, "MODEL_OPTIONS") else {})
+        .set_settings("proxy", model_proxy)
 )
 
 # Start Workflow
