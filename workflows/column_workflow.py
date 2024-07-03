@@ -85,7 +85,10 @@ def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
                         )
                         if summary_result["can_summarize"]:
                             readed_news_info = news.copy()
-                            readed_news_info.update({ "summary": summary_result["summary"] })
+                            readed_news_info.update({
+                                "title": summary_result["translated_title"],
+                                "summary": summary_result["summary"]
+                            })
                             readed_news.append(readed_news_info)
                             logger.info("[Summarzing]", "Success")
                         else:

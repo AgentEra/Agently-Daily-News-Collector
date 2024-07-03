@@ -12,6 +12,9 @@ output:
   can_summarize:
     $type: bool
     $desc: judge if {input} has enough relative content to be summarized
+  translated_title:
+    $type: str
+    $desc: translate {input.news title} into ${language}
   summary:
     $type: str
     $desc: summarize {input} according {info} and {instruct} if {can_summarize} == true, or output null
