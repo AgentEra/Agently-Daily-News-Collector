@@ -9,12 +9,14 @@ MODEL_PROVIDER: OAIClient
 MODEL_AUTH:
   api_key: "<Input Your API Key Here>"
 MODEL_OPTIONS:
-  model: gpt-4-turbo
+  model: gpt-3.5-turbo
 # Application Settings
 MAX_COLUMN_NUM: 3
 OUTPUT_LANGUAGE: English
 MAX_SEARCH_RESULTS: 8
 SLEEP_TIME: 5
+# News time limit: 'd' as day,'w' as week,'m' as month
+NEWS_TIME_LIMIT: d
 # Outline Settings
 USE_CUSTOMIZE_OUTLINE: false
 CUSTOMIZE_OUTLINE:

@@ -35,6 +35,7 @@ def start(column_outline, *, agent_factory, SETTINGS, root_path, logger):
             "searched_news",
             search(
                 column_outline["search_keywords"],
+                timelimit=SETTINGS.NEWS_TIME_LIMIT if hasattr(SETTINGS, "NEWS_TIME_LIMIT") else "d",
                 proxy=tool_proxy,
                 logger=logger,
             )

@@ -23,7 +23,7 @@ def start(*, agent_factory, SETTINGS, root_path, logger):
         if not SETTINGS.USE_CUSTOMIZE_OUTLINE:
             storage.set(
                 "topic",
-                input("[Please input the topic of your daily news collection]: ")
+                input("[Please input the topic of your news collection]: ")
             )
 
     @main_workflow.chunk("generate_outline")
@@ -39,6 +39,7 @@ def start(*, agent_factory, SETTINGS, root_path, logger):
                         path=f"{ root_path }/prompts/create_outline.yaml",
                         variables={
                             "topic": storage.get("topic"),
+                            "news_time_limit": SETTINGS.NEWS_TIME_LIMIT if hasattr(SETTINGS, "NEWS_TIME_LIMIT") else "d",
                             "language": SETTINGS.OUTPUT_LANGUAGE,
                             "max_column_num": SETTINGS.MAX_COLUMN_NUM,
                         }
