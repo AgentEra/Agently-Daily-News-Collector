@@ -108,7 +108,7 @@ python app.py
 
 ## 常见问题（FAQ）
 
-**1. 为什么提示请求超时？（如：operation timed out，504错误等）**
+**1. 为什么提示请求超时（如：operation timed out，504错误等）或是出现搜索结果为0的情况？**
 
 通常情况下是因为无法请求外网造成的，需要通过配置Proxy代理解决，配置方法请参考上文中SETTINGS.yaml的PROXY配置项
 
