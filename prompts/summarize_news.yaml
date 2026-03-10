@@ -1,0 +1,20 @@
+input: ${news_content}
+info:
+  news_title: ${news_title}
+  column_requirement: ${column_requirement}
+  language: ${language}
+instruct:
+  - Read the browsed page content and extract the core facts related to {info.news_title}.
+  - This stage is the final relevance check because you can read the full page content here.
+  - If the page content is too thin, inaccessible, or clearly irrelevant to {info.column_requirement}, set can_summarize to false.
+  - If the page contains enough concrete facts that are meaningfully related to the column, set can_summarize to true even when the fit is not perfect.
+  - summary must be one compact paragraph in {info.language}.
+  - Focus on facts that explain why the story belongs in this column.
+  - When the article is only partially related, summarize only the relevant part instead of rejecting it outright.
+output:
+  can_summarize:
+    $type: bool
+    $desc: whether the page contains enough useful information to summarize
+  summary:
+    $type: str
+    $desc: one-paragraph summary in {info.language}, or empty string if can_summarize is false

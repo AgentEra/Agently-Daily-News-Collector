@@ -164,3 +164,9 @@ cython_debug/
 
 # Agently
 .Agently
+
+# Project outputs
+logs/*
+!logs/.gitkeep
+outputs/*
+!outputs/.gitkeep

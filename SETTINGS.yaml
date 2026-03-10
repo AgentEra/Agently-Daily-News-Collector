@@ -1,33 +1,56 @@
-# Debug Settings
-IS_DEBUG: false
-# Proxy Settings
-#MODEL_PROXY: http://127.0.0.1:7890
-#TOOL_PROXY: http://127.0.0.1:7890
-# Model Settings
-MODEL_PROVIDER: OAIClient
-#MODEL_URL: 
-MODEL_AUTH:
-  api_key: "<Input Your API Key Here>"
-MODEL_OPTIONS:
-  model: gpt-3.5-turbo
-# Application Settings
-MAX_COLUMN_NUM: 3
-OUTPUT_LANGUAGE: English
-MAX_SEARCH_RESULTS: 8
-SLEEP_TIME: 5
-# News time limit: 'd' as day,'w' as week,'m' as month
-NEWS_TIME_LIMIT: d
-# Outline Settings
-USE_CUSTOMIZE_OUTLINE: false
-CUSTOMIZE_OUTLINE:
-  report_title: "Today's News about Large Model Applications"
-  column_list:
-    - column_title: New Apps
-      column_requirement: Looking for those applications powered by large models which announced recently
-      search_keywords: large model application announce this week
-    - column_title: Hot Apps
-      column_requirement: Looking for those applications powered by large models which are most popular or are discussed most
-      search_keywords: large model application popular hot 
-    - column_title: Fun Apps
-      column_requirement: Looking for those applications powered by large models which are funny or inspirational
-      search_keywords: large model application cool fun inspire
+# Debug
+DEBUG: false
+
+# Shared proxy for model/search/browse. Leave empty if not needed.
+PROXY: http://127.0.0.1:7890
+
+# Agently v4 model configuration.
+# Use Agently v4 `${ENV.xxx}` placeholders and let Agently resolve them from
+# the current environment or `.env` file when applying model settings.
+MODEL:
+  provider: OpenAICompatible
+  base_url: ${ENV.DEEPSEEK_BASE_URL}
+  model: ${ENV.DEEPSEEK_DEFAULT_MODEL}
+  model_type: chat
+  auth:
+    api_key: ${ENV.DEEPSEEK_API_KEY}
+  request_options:
+    temperature: 0.2
+
+SEARCH:
+  max_results: 8
+  timelimit: d
+  region: us-en
+  backend: auto
+
+BROWSE:
+  enable_playwright: true
+  playwright_headless: true
+  response_mode: markdown
+  max_content_length: 12000
+  min_content_length: 80
+
+WORKFLOW:
+  max_column_num: 3
+  max_news_per_column: 3
+  output_language: Chinese
+  column_concurrency: 3
+  summary_concurrency: 3
+
+OUTLINE:
+  use_customized: false
+  customized:
+    report_title: Today's News about Large Model Applications
+    column_list:
+      - column_title: Latest Launches
+        column_requirement: Focus on newly announced or newly released large model applications in the last few days.
+        search_keywords: large model application launch this week
+      - column_title: Hot Topics
+        column_requirement: Focus on the most discussed or fastest-growing large model applications.
+        search_keywords: large model application trending news
+      - column_title: Industry Moves
+        column_requirement: Focus on enterprise adoption, funding, partnerships, or strategy shifts around large model applications.
+        search_keywords: large model application enterprise partnership funding
+
+OUTPUT:
+  directory: outputs

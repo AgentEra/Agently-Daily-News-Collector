@@ -1,15 +1,26 @@
 input: ${column_news}
+info:
+  column_title: ${column_title}
+  column_requirement: ${column_requirement}
+  max_news_per_column: ${max_news_per_column}
 instruct:
-  news select rules:
-    - ${column_requirement}
-    - if several news are similar, just retain the one with most famous source and output {can_use} as false for others
+  - Review the candidate news list for the current column.
+  - This stage is a shortlist stage, so prioritize recall over precision.
+  - Prefer concrete, recent, source-backed stories that plausibly satisfy or strongly relate to {info.column_requirement}.
+  - Keep clearly relevant or potentially relevant stories for the next summarizing step, even if the snippet is incomplete.
+  - Reject only obvious duplicates, clearly unrelated stories, or items that are too thin to justify browsing.
+  - Keep at most {info.max_news_per_column} items with can_use equal to true.
+  - Use relevance_score from 0 to 10.
 output:
   - id:
       $type: int
       $desc: value from {input.[].id}
     can_use:
       $type: bool
-      $desc: judge if {input.brief} can be used according {instruct}
+      $desc: whether this item should enter the shortlist for later webpage reading
+    relevance_score:
+      $type: int
+      $desc: ranking score from 0 to 10 for shortlisted items
     recommend_comment:
       $type: str
-      $desc: provide your recommend comment if {can_use} == true, or just output null
+      $desc: short why-it-matters note if can_use is true, otherwise empty string

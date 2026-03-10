@@ -1,12 +1,17 @@
-input: ${slimmed_news}
+input: ${news_list}
 info:
-  column requirement: ${column_requirement}
+  column_title: ${column_title}
+  column_requirement: ${column_requirement}
+  language: ${language}
 instruct:
-  news select rules:
-    - if there're serveral similar content news, only select one of them into {news_list}
-    - all news selected must follow or be relative to {column requirement}
-  output language: ${language}
+  - Build the final column using the shortlisted stories.
+  - Keep the strongest non-duplicated stories only.
+  - prologue should be 2 to 3 sentences in {info.language}.
+  - When useful, cite key stories with Markdown links like [title](url).
 output:
+  prologue:
+    $type: str
+    $desc: opening paragraph for this column in {info.language}
   news_list:
     $type:
       - id:
@@ -14,8 +19,5 @@ output:
           $desc: value from {input.[].id}
         recommend_comment:
           $type: str
-          $desc: provide your recommend comment of this news according your role and {column requirement}
-    $desc: select news into column list according {news select rules} from {input}
-  prologue:
-    $type: str
-    $desc: write a prologue for readers according {news_list} and {news select rules}, you can use [<key info>](news url) to mark key information
+          $desc: refined why-it-matters note for the selected story
+    $desc: ordered list of stories to keep in the final column
