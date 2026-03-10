@@ -96,7 +96,8 @@ What changed is the engineering shape around that chain.
 
 - **TriggerFlow orchestration**
   - Replaces the old v3 workflow style with a more explicit flow graph (`to`, `for_each`, branching-ready composition).
-  - Meaning for this project: the end-to-end news pipeline is easier to inspect, evolve, and split into chunks without mixing orchestration with business logic.
+  - Unlike the old v3 Workflow chain, TriggerFlow here runs columns concurrently and also summarizes picked stories concurrently within each column.
+  - Meaning for this project: the end-to-end news pipeline is easier to inspect, evolve, and split into chunks without mixing orchestration with business logic, while total runtime is often reduced from a long serial chain to tens of seconds when model/search/browse latency is stable.
 - **Structured output contracts**
   - YAML prompts now define output schema directly for outline generation, news picking, summarizing, and column writing.
   - Meaning for this project: much less handwritten parsing glue, clearer interfaces between steps, and easier prompt iteration.
@@ -114,6 +115,7 @@ What changed is the engineering shape around that chain.
 
 - The core product behavior remains familiar to v3 users, but the project now has a cleaner app/workflow/tools/prompts split.
 - More logic is expressed in Agently-native capabilities instead of project-specific glue code.
+- True concurrency is now part of the default execution model. The v3 version was effectively serial, while the v4 version can process columns and per-column summaries in parallel through TriggerFlow.
 - Replacing tools, adjusting prompts, or evolving workflow steps is now lower-risk than in the old v3 layout.
 
 ## Notes
@@ -123,5 +125,6 @@ What changed is the engineering shape around that chain.
 - `tools/` defaults to Agently v4 built-in implementations, but you can replace the factories there with your own tools.
 - `workflow/` now contains both the flow definition and the concrete chunk implementations.
 - `news_collector/` acts as the app/integration layer for configuration, model wiring, and CLI entry support.
-- `BROWSE.enable_playwright` defaults to `false` to avoid forcing a Playwright install.
+- The current sample [`SETTINGS.yaml`](./SETTINGS.yaml) enables `BROWSE.enable_playwright: true` by default because many news pages need a real browser to return usable content.
+- If you do not want to install Playwright, set `BROWSE.enable_playwright` to `false` manually, but expect weaker browse quality on dynamic or protected sites.
 - The settings loader keeps basic compatibility with the old v3 keys such as `MODEL_PROVIDER`, `MODEL_URL`, `MODEL_AUTH`, `MODEL_OPTIONS`, `MAX_COLUMN_NUM`, and `USE_CUSTOMIZE_OUTLINE`.

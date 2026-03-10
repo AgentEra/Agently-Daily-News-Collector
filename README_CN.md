@@ -96,7 +96,8 @@ python app.py "AI Agents"
 
 - **TriggerFlow 编排**
   - 用更显式的流程图式写法替代 v3 的旧 Workflow 风格，支持 `to`、`for_each` 等组合方式。
-  - 对本项目的意义：新闻采集链路更容易拆 chunk、看依赖、调并发，也更适合后续继续演进。
+  - 和旧版 v3 基本串行执行不同，这个 v4 版本会并发处理多个栏目，并在栏目内部并发总结多条入选新闻。
+  - 对本项目的意义：新闻采集链路更容易拆 chunk、看依赖、调并发，也更适合后续继续演进；在模型、搜索和抓取延迟正常时，整体耗时通常可以压到几十秒量级。
 - **结构化输出契约**
   - 现在 outline、pick、summarize、write column 都直接在 YAML prompt 里声明输出结构。
   - 对本项目的意义：少写很多手工解析代码，步骤之间的接口更清晰，调 prompt 时更可控。
@@ -114,6 +115,7 @@ python app.py "AI Agents"
 
 - 对 v3 用户来说，产品级行为仍然熟悉，但项目结构已经从“单体 workflow 脚本”变成了更清晰的 app / workflow / tools / prompts 分层。
 - 更多能力直接复用了 Agently v4 原生机制，而不是继续在项目里堆自定义胶水代码。
+- 真正的并发执行现在成为默认能力。v3 版本整体上仍是串行 workflow，而 v4 可以通过 TriggerFlow 并发跑栏目和栏目内摘要，直接改善总耗时。
 - 后续无论是替换工具、调整提示词，还是演进工作流步骤，风险都比 v3 结构更低。
 
 ## 说明
@@ -123,5 +125,6 @@ python app.py "AI Agents"
 - `tools/` 默认封装 Agently v4 内置工具；如果你要接自己的搜索或抓取方案，只需要替换这里的工厂函数
 - `workflow/` 现在同时包含流程定义和各个 chunk 的具体实现
 - `news_collector/` 现在承担 app/integration 层职责，负责配置、模型装配和 CLI 入口支持
-- `BROWSE.enable_playwright` 默认关闭，这样不需要额外安装 Playwright 也能运行
+- 当前仓库里的 [`SETTINGS.yaml`](./SETTINGS.yaml) 默认开启 `BROWSE.enable_playwright: true`，因为很多新闻页面只有在真实浏览器环境下才能抓到可用正文
+- 如果你不想额外安装 Playwright，可以手动把 `BROWSE.enable_playwright` 改成 `false`，但动态站点、受保护页面和部分媒体站的抓取质量会明显下降
 - 新版配置优先读取 `MODEL / SEARCH / BROWSE / WORKFLOW / OUTLINE / OUTPUT` 结构，同时兼容部分旧版 v3 配置键，例如 `MODEL_PROVIDER`、`MODEL_URL`、`MODEL_AUTH`、`MODEL_OPTIONS`、`MAX_COLUMN_NUM`、`USE_CUSTOMIZE_OUTLINE`
