@@ -102,6 +102,7 @@ python app.py "AI Agents"
 - 现在工作流规划也更贴近业务边界：
   - 主 flow 负责 `prepare_request -> generate_outline -> for_each(column) -> render_report`
   - 栏目 sub flow 负责 `search -> pick -> summarize -> write_column`
+  - 栏目内部的 `summarize` 又继续下沉为一个 summary sub flow，用 TriggerFlow 自己的 `for_each + collect` 做并发收拢，而不是在业务代码里手写 `asyncio.gather`
   - 这样主流程关注“整份日报如何生成”，子流程关注“单个栏目如何产出”
   - `sub flow` 的直接价值是：栏目链路现在可以被当成一个独立、可复用、可单独演进的流程单元来看待，而不是继续埋在父流程的某个大 chunk 里
 

@@ -102,6 +102,7 @@ What changed is the engineering shape around that chain.
 - The workflow plan is now closer to the business boundary:
   - parent flow: `prepare_request -> generate_outline -> for_each(column) -> render_report`
   - column sub flow: `search -> pick -> summarize -> write_column`
+  - the `summarize` stage inside the column flow is further pushed down into a summary sub flow, where TriggerFlow handles fan-out and collection directly instead of leaving `asyncio.gather` in business code
   - this keeps the parent focused on report orchestration and the child focused on one column lifecycle
   - the immediate value of `sub flow` here is that the column pipeline becomes a reusable, independently evolvable workflow unit instead of staying buried inside one oversized parent chunk
 
