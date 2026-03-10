@@ -6,6 +6,8 @@
 - 使用 Agently v4 内置 `Search` / `Browse` 工具
 - 使用结构化输出契约替代旧版 v3 `Workflow` API
 
+> 版本约束：本项目仅适用于 **Agently v4.0.8.2 及以上版本**。如果你安装的是更早的 v4 版本，`TriggerFlow` 的 runtime resources、流程配置导入导出与部分运行时接口可能与当前实现不兼容。
+
 原有 Agently v3 项目已经整体归档到 [`./v3`](./v3)。
 
 ## 功能说明
@@ -23,6 +25,12 @@
 
 ```bash
 pip install -r requirements.txt
+```
+
+如果你是手动安装 Agently，请确认版本至少为：
+
+```bash
+pip install "agently>=4.0.8.2"
 ```
 
 2. 修改 [`SETTINGS.yaml`](./SETTINGS.yaml)：
@@ -121,6 +129,7 @@ python app.py "AI Agents"
 ## 说明
 
 - Agently v4 要求 Python `>=3.10`
+- 本项目要求 Agently `>=4.0.8.2`
 - 模型配置现在使用 Agently v4 的 `auto_load_env=True` 和 `${ENV.xxx}` 占位符
 - `tools/` 默认封装 Agently v4 内置工具；如果你要接自己的搜索或抓取方案，只需要替换这里的工厂函数
 - `workflow/` 现在同时包含流程定义和各个 chunk 的具体实现

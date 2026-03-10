@@ -6,6 +6,8 @@ Agently Daily News Collector has been rewritten on top of **Agently v4** and now
 - Agently v4 built-in `Search` and `Browse` tools
 - structured output contracts instead of the old v3 workflow API
 
+> Version constraint: this project requires **Agently v4.0.8.2 or newer**. Earlier v4 releases may not be compatible with the current `TriggerFlow` runtime resources, flow config import/export, and related runtime APIs used here.
+
 The previous Agently v3 project has been archived under [`./v3`](./v3).
 
 ## Features
@@ -23,6 +25,12 @@ The previous Agently v3 project has been archived under [`./v3`](./v3).
 
 ```bash
 pip install -r requirements.txt
+```
+
+If you install Agently manually, make sure you use at least:
+
+```bash
+pip install "agently>=4.0.8.2"
 ```
 
 2. Edit [`SETTINGS.yaml`](./SETTINGS.yaml):
@@ -121,6 +129,7 @@ What changed is the engineering shape around that chain.
 ## Notes
 
 - Python `>=3.10` is required because Agently v4 requires it.
+- This project requires Agently `>=4.0.8.2`.
 - Model settings now use Agently v4 `auto_load_env=True` with `${ENV.xxx}` placeholders.
 - `tools/` defaults to Agently v4 built-in implementations, but you can replace the factories there with your own tools.
 - `workflow/` now contains both the flow definition and the concrete chunk implementations.
