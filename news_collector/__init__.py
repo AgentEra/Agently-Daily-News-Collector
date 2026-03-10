@@ -1,6 +1,3 @@
-__all__ = ["AppSettings", "DailyNewsCollector", "main"]
-
-
 def __getattr__(name: str):
     if name == "AppSettings":
         from .config import AppSettings

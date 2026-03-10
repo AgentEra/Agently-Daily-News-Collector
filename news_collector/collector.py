@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from agently import Agently
 
@@ -45,7 +45,8 @@ class DailyNewsCollector:
         normalized_topic = topic.strip()
         if not normalized_topic:
             raise ValueError("Topic is required.")
-        return self.flow.start(normalized_topic)
+        result = self.flow.start(normalized_topic)
+        return result
 
     def _configure_agently(self) -> None:
         from dotenv import find_dotenv, load_dotenv
@@ -75,7 +76,9 @@ class DailyNewsCollector:
         if not env_names:
             return
 
-        missing_env_names = [name for name in env_names if os.getenv(name) in (None, "")]
+        missing_env_names = [
+            name for name in env_names if os.getenv(name) in (None, "")
+        ]
         if missing_env_names:
             raise EnvironmentError(
                 "Missing required model environment variables: "
