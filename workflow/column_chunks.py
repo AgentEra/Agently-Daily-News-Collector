@@ -4,229 +4,198 @@ import asyncio
 import copy
 import logging
 import re
-from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Callable, cast
+from typing import Any, Callable
 
-from agently import Agently, TriggerFlowEventData
+from agently import TriggerFlowRuntimeData
+from tools.base import BrowseToolProtocol, SearchToolProtocol
 
-from news_collector.config import AppSettings
-from news_collector.markdown import render_markdown
-from tools import BrowseToolProtocol, SearchToolProtocol
-
-
-@dataclass(frozen=True, slots=True)
-class DailyNewsChunkConfig:
-    settings: AppSettings
-    prompt_dir: Path
-    output_dir: Path
-    model_label: str
+from .common import (
+    DailyNewsChunkConfig,
+    create_editor_agent,
+    is_chinese_language,
+    require_browse_tool,
+    require_logger,
+    require_search_tool,
+    safe_int,
+)
 
 
-def create_prepare_request_chunk(
+def create_search_column_news_chunk(
     config: DailyNewsChunkConfig,
-) -> Callable[[TriggerFlowEventData], Any]:
-    async def prepare_request(data: TriggerFlowEventData) -> dict[str, Any]:
-        topic = str(data.value).strip()
-        now = datetime.now()
-        request = {
-            "topic": topic,
-            "today": now.strftime("%Y-%m-%d"),
-            "generated_at": now.strftime("%Y-%m-%d %H:%M:%S"),
-            "language": config.settings.workflow.output_language,
-        }
-        data.state.set("request", request)
-        _require_logger(data).info("[Topic] %s", topic)
-        return request
+) -> Callable[[TriggerFlowRuntimeData], Any]:
+    async def search_column_news(data: TriggerFlowRuntimeData) -> dict[str, Any] | None:
+        column_outline = data.value if isinstance(data.value, dict) else None
+        if not isinstance(column_outline, dict):
+            return None
 
-    return prepare_request
+        title = str(column_outline.get("column_title") or "").strip()
+        if not title:
+            return None
 
+        logger = require_logger(data)
+        request = _get_request_context(data)
+        logger.info("[Start Generate Column] %s", title)
+        try:
+            searched_news = await _search_news(
+                config,
+                logger,
+                require_search_tool(data),
+                column_outline,
+                topic=str(request.get("topic") or ""),
+            )
+        except Exception as exc:
+            logger.exception("[Column Search Failed] %s: %s", title, exc)
+            return None
 
-def create_generate_outline_chunk(
-    config: DailyNewsChunkConfig,
-) -> Callable[[TriggerFlowEventData], Any]:
-    async def generate_outline(data: TriggerFlowEventData) -> list[dict[str, Any]]:
-        request = data.value
-        logger = _require_logger(data)
-        if config.settings.outline.use_customized:
-            outline = _get_customized_outline(config)
-            logger.info("[Use Customized Outline] %s", outline)
-        else:
-            outline = await _generate_outline(config, request)
-            logger.info("[Outline Generated] %s", outline)
-        data.state.set("outline", outline)
-        return outline.get("column_list", [])
-
-    return generate_outline
-
-
-def create_generate_column_chunk(
-    config: DailyNewsChunkConfig,
-) -> Callable[[TriggerFlowEventData], Any]:
-    async def generate_column(data: TriggerFlowEventData) -> dict[str, Any] | None:
-        return await _generate_column(config, data, data.value)
-
-    return generate_column
-
-
-def create_render_report_chunk(
-    config: DailyNewsChunkConfig,
-) -> Callable[[TriggerFlowEventData], Any]:
-    async def render_report(data: TriggerFlowEventData) -> dict[str, Any]:
-        request = data.state.get("request") or {}
-        outline = data.state.get("outline") or {}
-        columns = [column for column in data.value if isinstance(column, dict)]
-        report_title = str(
-            outline.get("report_title")
-            or f"Daily News about {request.get('topic', 'the topic')}"
-        )
-        markdown = render_markdown(
-            report_title=report_title,
-            generated_at=str(request.get("generated_at") or ""),
-            topic=str(request.get("topic") or ""),
-            language=config.settings.workflow.output_language,
-            columns=columns,
-            model_label=config.model_label,
-        )
-        output_path = _write_markdown(
-            config=config,
-            report_title=report_title,
-            report_date=str(request.get("today") or ""),
-            markdown=markdown,
-        )
-        _require_logger(data).info("[Markdown Saved] %s", output_path)
-        return {
-            "report_title": report_title,
-            "output_path": str(output_path),
-            "markdown": markdown,
-            "columns": columns,
-        }
-
-    return render_report
-
-
-def _create_agent(*, kind: str):
-    agent = Agently.create_agent(name=f"{kind}_editor")
-    if kind == "chief":
-        agent.set_agent_prompt(
-            "system",
-            "You are a veteran newsroom chief editor who designs reliable daily news briefings.",
-        )
-        agent.set_agent_prompt(
-            "instruct",
-            [
-                "Prefer recent, factual, non-duplicated stories.",
-                "Keep structures stable and concise.",
-            ],
-        )
-    else:
-        agent.set_agent_prompt(
-            "system",
-            "You are a meticulous news editor who selects and rewrites high-signal stories.",
-        )
-        agent.set_agent_prompt(
-            "instruct",
-            [
-                "Reject irrelevant or thin content.",
-                "Keep comments practical and publication-ready.",
-            ],
-        )
-    return agent
-
-
-async def _generate_outline(
-    config: DailyNewsChunkConfig,
-    request: dict[str, Any],
-) -> dict[str, Any]:
-    outline = await (
-        _create_agent(kind="chief")
-        .load_yaml_prompt(
-            config.prompt_dir / "create_outline.yaml",
-            {
-                "topic": request["topic"],
-                "today": request["today"],
-                "language": config.settings.workflow.output_language,
-                "max_column_num": config.settings.workflow.max_column_num,
-            },
-        )
-        .async_start(
-            ensure_keys=[
-                "report_title",
-                "column_list[*].column_title",
-                "column_list[*].column_requirement",
-                "column_list[*].search_keywords",
-            ]
-        )
-    )
-    if not isinstance(outline, dict):
-        raise TypeError(f"Invalid outline result: {outline}")
-    column_list = outline.get("column_list", [])
-    if not isinstance(column_list, list):
-        raise TypeError("Outline column_list must be a list.")
-    outline["column_list"] = column_list[: config.settings.workflow.max_column_num]
-    return outline
-
-
-def _get_customized_outline(config: DailyNewsChunkConfig) -> dict[str, Any]:
-    outline = copy.deepcopy(config.settings.outline.customized)
-    column_list = outline.get("column_list", [])
-    if not isinstance(column_list, list) or not column_list:
-        raise ValueError("Customized outline must provide a non-empty column_list.")
-    outline["column_list"] = column_list[: config.settings.workflow.max_column_num]
-    outline.setdefault("report_title", "Daily News Briefing")
-    return outline
-
-
-async def _generate_column(
-    config: DailyNewsChunkConfig,
-    data: TriggerFlowEventData,
-    column_outline: dict[str, Any],
-) -> dict[str, Any] | None:
-    title = str(column_outline.get("column_title") or "").strip()
-    if not title:
-        return None
-
-    logger = _require_logger(data)
-    logger.info("[Start Generate Column] %s", title)
-    try:
-        request = data.state.get("request") or {}
-        search_tool = _require_search_tool(data)
-        browse_tool = _require_browse_tool(data)
-        searched_news = await _search_news(
-            config,
-            logger,
-            search_tool,
-            column_outline,
-            topic=str(request.get("topic") or ""),
-        )
         logger.info("[Search News Count] %s => %s", title, len(searched_news))
         if not searched_news:
             return None
+        return {
+            "column_outline": copy.deepcopy(column_outline),
+            "searched_news": searched_news,
+        }
 
-        picked_news = await _pick_news(config, column_outline, searched_news)
+    return search_column_news
+
+
+def create_pick_column_news_chunk(
+    config: DailyNewsChunkConfig,
+) -> Callable[[TriggerFlowRuntimeData], Any]:
+    async def pick_column_news(data: TriggerFlowRuntimeData) -> dict[str, Any] | None:
+        context = _coerce_column_context(data.value)
+        if context is None:
+            return None
+
+        column_outline = context["column_outline"]
+        searched_news = context["searched_news"]
+        title = str(column_outline.get("column_title") or "").strip()
+        logger = require_logger(data)
+        try:
+            picked_news = await _pick_news(
+                config,
+                column_outline,
+                searched_news,
+            )
+        except Exception as exc:
+            logger.exception("[Column Pick Failed] %s: %s", title, exc)
+            return None
+
         logger.info("[Picked News Count] %s => %s", title, len(picked_news))
         if not picked_news:
             return None
+        return {
+            **context,
+            "picked_news": picked_news,
+        }
 
-        summarized_news = await _summarize_news(
-            config,
-            logger,
-            browse_tool,
-            column_outline,
-            searched_news,
-            picked_news,
-        )
+    return pick_column_news
+
+
+def create_summarize_column_news_chunk(
+    config: DailyNewsChunkConfig,
+) -> Callable[[TriggerFlowRuntimeData], Any]:
+    async def summarize_column_news(data: TriggerFlowRuntimeData) -> dict[str, Any] | None:
+        context = _coerce_column_context(data.value, require_picked=True)
+        if context is None:
+            return None
+
+        column_outline = context["column_outline"]
+        title = str(column_outline.get("column_title") or "").strip()
+        logger = require_logger(data)
+        try:
+            summarized_news = await _summarize_news(
+                config,
+                logger,
+                require_browse_tool(data),
+                column_outline,
+                context["searched_news"],
+                context["picked_news"],
+            )
+        except Exception as exc:
+            logger.exception("[Column Summarize Failed] %s: %s", title, exc)
+            return None
+
         logger.info("[Summarized News Count] %s => %s", title, len(summarized_news))
         if not summarized_news:
             return None
+        return {
+            **context,
+            "summarized_news": summarized_news,
+        }
 
-        column_result = await _write_column(config, column_outline, summarized_news)
+    return summarize_column_news
+
+
+def create_write_column_chunk(
+    config: DailyNewsChunkConfig,
+) -> Callable[[TriggerFlowRuntimeData], Any]:
+    async def write_column(data: TriggerFlowRuntimeData) -> dict[str, Any] | None:
+        context = _coerce_column_context(data.value, require_picked=True, require_summarized=True)
+        if context is None:
+            return None
+
+        column_outline = context["column_outline"]
+        title = str(column_outline.get("column_title") or "").strip()
+        logger = require_logger(data)
+        try:
+            column_result = await _write_column(
+                config,
+                column_outline,
+                context["summarized_news"],
+            )
+        except Exception as exc:
+            logger.exception("[Column Write Failed] %s: %s", title, exc)
+            return None
+
         logger.info("[Column Ready] %s", title)
         return column_result
-    except Exception as exc:
-        logger.exception("[Column Failed] %s: %s", title, exc)
+
+    return write_column
+
+
+def _get_request_context(data: TriggerFlowRuntimeData) -> dict[str, Any]:
+    request = data.state.get("request")
+    if not isinstance(request, dict):
+        request = data.get_runtime_data("request")
+    return request if isinstance(request, dict) else {}
+
+
+def _coerce_column_context(
+    value: Any,
+    *,
+    require_picked: bool = False,
+    require_summarized: bool = False,
+) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
         return None
+
+    column_outline = value.get("column_outline")
+    searched_news = value.get("searched_news")
+    if not isinstance(column_outline, dict) or not isinstance(searched_news, list):
+        return None
+
+    context: dict[str, Any] = {
+        "column_outline": column_outline,
+        "searched_news": searched_news,
+    }
+
+    picked_news = value.get("picked_news")
+    if picked_news is not None:
+        if not isinstance(picked_news, list):
+            return None
+        context["picked_news"] = picked_news
+    elif require_picked:
+        return None
+
+    summarized_news = value.get("summarized_news")
+    if summarized_news is not None:
+        if not isinstance(summarized_news, list):
+            return None
+        context["summarized_news"] = summarized_news
+    elif require_summarized:
+        return None
+
+    return context
 
 
 async def _search_news(
@@ -347,7 +316,7 @@ async def _pick_news(
     searched_news: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     pick_results = await (
-        _create_agent(kind="column")
+        create_editor_agent(kind="column")
         .load_yaml_prompt(
             config.prompt_dir / "pick_news.yaml",
             {
@@ -374,19 +343,19 @@ async def _pick_news(
     seen_ids: set[int] = set()
     sorted_results = sorted(
         [item for item in pick_results if isinstance(item, dict)],
-        key=lambda item: _safe_int(item.get("relevance_score"), 0),
+        key=lambda item: safe_int(item.get("relevance_score"), 0),
         reverse=True,
     )
     for item in sorted_results:
         if item.get("can_use") is not True:
             continue
-        news_id = _safe_int(item.get("id"), -1)
+        news_id = safe_int(item.get("id"), -1)
         if news_id < 0 or news_id >= len(searched_news) or news_id in seen_ids:
             continue
         seen_ids.add(news_id)
         picked_item = copy.deepcopy(searched_news[news_id])
         picked_item["recommend_comment"] = str(item.get("recommend_comment") or "").strip()
-        picked_item["relevance_score"] = _safe_int(item.get("relevance_score"), 0)
+        picked_item["relevance_score"] = safe_int(item.get("relevance_score"), 0)
         picked_news.append(picked_item)
         if len(picked_news) >= config.settings.workflow.max_news_per_column:
             break
@@ -471,7 +440,7 @@ async def _summarize_single_news(
         return None
 
     summary_result = await (
-        _create_agent(kind="column")
+        create_editor_agent(kind="column")
         .load_yaml_prompt(
             config.prompt_dir / "summarize_news.yaml",
             {
@@ -552,7 +521,7 @@ def _build_backup_recommend_comment(
 ) -> str:
     title = str(column_outline.get("column_title") or "this section")
     news_title = str(news.get("title") or "").strip()
-    if _is_chinese_language(config.settings.workflow.output_language):
+    if is_chinese_language(config.settings.workflow.output_language):
         if news_title:
             return f"该报道与“{title}”存在明确关联，可作为备用候选：{news_title}。"
         return f"该报道与“{title}”存在明确关联，可作为备用候选。"
@@ -597,7 +566,7 @@ async def _write_column(
         )
 
     column_result = await (
-        _create_agent(kind="column")
+        create_editor_agent(kind="column")
         .load_yaml_prompt(
             config.prompt_dir / "write_column.yaml",
             {
@@ -624,7 +593,7 @@ async def _write_column(
     for item in column_result.get("news_list", []):
         if not isinstance(item, dict):
             continue
-        news_id = _safe_int(item.get("id"), -1)
+        news_id = safe_int(item.get("id"), -1)
         if news_id < 0 or news_id >= len(summarized_news) or news_id in used_ids:
             continue
         used_ids.add(news_id)
@@ -668,7 +637,7 @@ def _build_fallback_prologue(
     if not news_list:
         return str(column_outline.get("column_requirement") or "")
 
-    if _is_chinese_language(config.settings.workflow.output_language):
+    if is_chinese_language(config.settings.workflow.output_language):
         lead_titles = "，".join(f"《{news['title']}》" for news in news_list[:3])
         return f"本栏目围绕“{column_outline['column_title']}”整理了以下重点内容：{lead_titles}。"
 
@@ -676,46 +645,9 @@ def _build_fallback_prologue(
     return f"This section highlights the most relevant stories for {column_outline['column_title']}: {lead_titles}."
 
 
-def _write_markdown(
-    *,
-    config: DailyNewsChunkConfig,
-    report_title: str,
-    report_date: str,
-    markdown: str,
-) -> Path:
-    config.output_dir.mkdir(parents=True, exist_ok=True)
-    safe_title = _safe_filename(report_title)
-    file_name = f"{safe_title}_{report_date or datetime.now().strftime('%Y-%m-%d')}.md"
-    output_path = config.output_dir / file_name
-    output_path.write_text(markdown, encoding="utf-8")
-    return output_path
-
-
-def _is_chinese_language(language: str) -> bool:
-    normalized = language.lower()
-    return "chinese" in normalized or normalized.startswith("zh")
-
-
-def _safe_filename(name: str) -> str:
-    cleaned = re.sub(r"[\\/:*?\"<>|]+", "-", name)
-    cleaned = re.sub(r"\s+", " ", cleaned).strip(" .-_")
-    return cleaned or "daily-news-report"
-
-
-def _safe_int(value: Any, default: int) -> int:
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return default
-
-
-def _require_logger(data: TriggerFlowEventData) -> logging.Logger:
-    return cast(logging.Logger, data.require_resource("logger"))
-
-
-def _require_search_tool(data: TriggerFlowEventData) -> SearchToolProtocol:
-    return cast(SearchToolProtocol, data.require_resource("search_tool"))
-
-
-def _require_browse_tool(data: TriggerFlowEventData) -> BrowseToolProtocol:
-    return cast(BrowseToolProtocol, data.require_resource("browse_tool"))
+__all__ = [
+    "create_search_column_news_chunk",
+    "create_pick_column_news_chunk",
+    "create_summarize_column_news_chunk",
+    "create_write_column_chunk",
+]

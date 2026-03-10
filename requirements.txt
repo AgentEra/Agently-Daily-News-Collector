@@ -1,4 +1,4 @@
-agently>=4.0.8.2
+agently>=4.0.8.3
 PyYAML>=6.0.2
 ddgs>=9.10.0
 beautifulsoup4>=4.12.3
