@@ -24,8 +24,8 @@ SEARCH:
   backend: auto
   # provider: duckduckgo or tavily (default: duckduckgo)
   # provider: tavily
-  # When provider is 'tavily', set the TAVILY_API_KEY environment variable.
-  # TAVILY_API_KEY: ${TAVILY_API_KEY}
+  # When provider is 'tavily', set TAVILY_API_KEY in your environment or .env file:
+  #   export TAVILY_API_KEY=tvly-...
 
 BROWSE:
   enable_playwright: true
