@@ -25,6 +25,7 @@ SearchBackend: TypeAlias = Literal[
     "wikipedia",
 ]
 SearchNewsTimeLimit: TypeAlias = Literal["d", "w", "m"]
+SearchProvider: TypeAlias = Literal["duckduckgo", "tavily"]
 SearchRegion: TypeAlias = Literal[
     "xa-ar",
     "xa-en",
@@ -109,6 +110,7 @@ SEARCH_BACKEND_VALUES: tuple[SearchBackend, ...] = (
     "wikipedia",
 )
 SEARCH_TIMELIMIT_VALUES: tuple[SearchNewsTimeLimit, ...] = ("d", "w", "m")
+SEARCH_PROVIDER_VALUES: tuple[SearchProvider, ...] = ("duckduckgo", "tavily")
 SEARCH_REGION_VALUES: tuple[SearchRegion, ...] = (
     "xa-ar",
     "xa-en",
@@ -328,6 +330,7 @@ class SearchConfig:
     region: SearchRegion = "us-en"
     backend: SearchBackend = "auto"
     proxy: str | None = None
+    provider: SearchProvider = "duckduckgo"
 
     @classmethod
     def from_raw(cls, raw: dict[str, Any]) -> "SearchConfig":
@@ -350,6 +353,11 @@ class SearchConfig:
                 default="auto",
             ),
             proxy=_as_optional_str(block.get("proxy")),
+            provider=_as_literal(
+                block.get("provider"),
+                allowed=SEARCH_PROVIDER_VALUES,
+                default="duckduckgo",
+            ),
         )
 
 

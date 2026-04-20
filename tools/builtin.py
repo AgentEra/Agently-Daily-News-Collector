@@ -57,6 +57,10 @@ class AgentlyBuiltinBrowseTool(BrowseToolProtocol):
 
 
 def create_search_tool(settings: AppSettings) -> SearchToolProtocol:
+    if settings.search.provider == "tavily":
+        from .tavily import TavilySearchTool
+
+        return TavilySearchTool(settings)
     return AgentlyBuiltinSearchTool(settings)
 
 

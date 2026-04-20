@@ -22,6 +22,10 @@ SEARCH:
   timelimit: d
   region: us-en
   backend: auto
+  # provider: duckduckgo or tavily (default: duckduckgo)
+  # provider: tavily
+  # When provider is 'tavily', set TAVILY_API_KEY in your environment or .env file:
+  #   export TAVILY_API_KEY=tvly-...
 
 BROWSE:
   enable_playwright: true
