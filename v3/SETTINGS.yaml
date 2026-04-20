@@ -9,6 +9,10 @@ MODEL_AUTH:
   api_key: "<Input Your API Key Here>"
 MODEL_OPTIONS:
   model: gpt-3.5-turbo
+# Search Provider Settings
+# Set the TAVILY_API_KEY environment variable to use Tavily for news search.
+# When TAVILY_API_KEY is present, Tavily is used automatically; otherwise
+# DuckDuckGo is used as the default search provider.
 # Application Settings
 MAX_COLUMN_NUM: 3
 OUTPUT_LANGUAGE: English
